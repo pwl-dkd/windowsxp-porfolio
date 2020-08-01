@@ -1,7 +1,8 @@
 <template>
   <div id="desktop">
     
-    <Icon appName="Chrome" Ypos=0 Xpos=0  />
+    <Icon appName="Chrome" Ypos=1 Xpos=1  />
+
 
 
 

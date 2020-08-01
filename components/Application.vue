@@ -1,9 +1,9 @@
 <template>
-  <div id="Application" v-on:click="selectedWindow">
-      <div v-on:mousedown="dragWindow"  class="windowsHeader">
-        <div class="windowName" @mousedown="dragging = true">
+  <div id="Application" :class="{'dragging': dragging}" class="app" v-on:click="selectedWindow" :style="{'width': windowWidth + 'px','height': windowHeight + 'px','top': windowYPos + 'px','left': windowXPos + 'px'}">
+      <div class="windowsHeader">
+        <div class="windowName" @mousedown="dragEvent">
           <img class="windowIcon" :src="require( `../assets/images/icons/${name}.png`)" /> 
-          <p>{{name}} | {{dragging}}</p>
+          <p>{{name}}</p>
         </div>
       </div>
   </div>
@@ -21,33 +21,40 @@ export default {
   data () {
     return {
       dragging: false,
-      windowHeight: .45,
-      windowWidth: .65,
-      windowYPos: .15,
-      windowXPos: .17,
+      windowHeight: 100,
+      windowWidth: 100,
+      windowYPos: 100,
+      windowXPos: 100,
     }
   },
-  çreated(){
+  created(){
+    let _this = this;
     window.addEventListener('mouseup', ()=>{
-      dragging: true,
+      _this.dragging = false;
+      document.removeEventListener('mousemove', this.mouseMoveDrag);
     });
+
+    this.windowYPos = window.innerHeight * 0.1;
+    this.windowXPos = window.innerWidth * 0.1;
+    this.windowWidth = window.innerWidth * 0.8;
+    this.windowHeight = window.innerHeight * 0.8;
+
+
+    let windowsPositions = [];
+    let windows = document.body.querySelectorAll("#windows div div.app");
+    
+    console.log(windowsPositions);
+
+    //window placement logic here;
   },
   methods: {
-    OpenApplication() {
-      var appWindowData = this.$props
-      var appWindow = this.$el;
-      var appWindowStyle = appWindow.style;
-
-      appWindowStyle.height = window.innerHeight * this.windowHeight +  'px';
-      appWindowStyle.width = window.innerWidth * this.windowWidth +  'px';
-
-      var unselectedWindow = this.$parent.$parent.inactiveWindows * 20 ;
-
-      appWindowStyle.top = window.innerHeight * this.windowYPos + unselectedWindow +  'px';
-      appWindowStyle.left = window.innerWidth * this.windowXPos +  unselectedWindow +  'px';
+    dragEvent(e){
+      this.dragging = true;
+      document.addEventListener('mousemove', this.mouseMoveDrag);
     },
-    dragWindow() {
-      console.log("mouse is down");
+    mouseMoveDrag(e){
+      this.windowYPos += e.movementY;
+      this.windowXPos += e.movementX;
     },
     selectedWindow () {
       if (this.$parent.$parent.inactiveWindows > 0) {
@@ -55,26 +62,29 @@ export default {
       }
     }
   },
-  mounted: function () {
-    this.OpenApplication();
-  }
 }
 </script>
 
 <style>
-#Application {
+.app {
   position:absolute;
   background:red;
   border:1px solid black;
 }
+.dragging{
+  opacity: .75;
+}
 .windowsHeader {
-  height: 6%;
+  height: 28px;
   width: 100%;
   background:blue;
+  background-position: center;
+  background-size: auto 100%;
   background-image: url(~@/assets/images/backgrounds/window_bar.png);
   
 }
 .windowName {
+  height: 100%;
   font-size: 12px;
   text-shadow: 1px 1px 1px #000;
   color:white;
