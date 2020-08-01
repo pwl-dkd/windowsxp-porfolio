@@ -1,6 +1,4 @@
-# windowsxp-porfolio
-
-> Pawel portfolio project
+# portfolio
 
 ## Build Setup
 
