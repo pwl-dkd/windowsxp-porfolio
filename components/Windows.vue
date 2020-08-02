@@ -1,7 +1,7 @@
 <template>
   <div id="windows">
       <div v-bind:key="appWindow.id" v-for="appWindow in activeApps">
-        <Application :name="appWindow.name" :id="appWindow.id"/>
+        <Application :name="appWindow.name" :iconName="appWindow.iconName" :id="appWindow.id"/>
       </div>
   </div>
 </template>
@@ -23,7 +23,8 @@ export default {
   },
   mounted: function () {
       
-    
+    console.error("Pawel is niet gay");
+    console.warn("VUE WARN: It's true")
   }
 }
 </script>

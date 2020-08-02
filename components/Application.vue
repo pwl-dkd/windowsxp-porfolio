@@ -1,9 +1,13 @@
 <template>
-  <div id="Application" :class="{'dragging': dragging}" class="app" v-on:click="selectedWindow" :style="{'width': windowWidth + 'px','height': windowHeight + 'px','top': windowYPos + 'px','left': windowXPos + 'px'}">
+  <div id="Application" :class="{'dragging': dragging, 'fullscreen': fullscreen}" class="app" v-on:click="selectedWindow" :style="{'width': windowWidth + 'px','height': windowHeight + 'px','top': windowYPos + 'px','left': windowXPos + 'px'}">
       <div class="windowsHeader">
         <div class="windowName" @mousedown="dragEvent">
-          <img class="windowIcon" :src="require( `../assets/images/icons/${name}.png`)" /> 
+          <img class="windowIcon" :src="require( `../assets/images/icons/${iconName}.png`)" /> 
           <p>{{name}}</p>
+          <button @click="fullScreenWindow" >
+             <i v-if="!fullscreen">Full</i><i v-else>Mini</i>
+            </button>
+          <p @click="closeWindow" >close</p>
         </div>
       </div>
   </div>
@@ -16,11 +20,13 @@ export default {
   name: 'Application',
    props: [
     'id', 
-    'name'
+    'name',
+    'iconName'
   ],
   data () {
     return {
       dragging: false,
+      fullscreen: false,
       windowHeight: 100,
       windowWidth: 100,
       windowYPos: 100,
@@ -34,18 +40,33 @@ export default {
       document.removeEventListener('mousemove', this.mouseMoveDrag);
     });
 
-    this.windowYPos = window.innerHeight * 0.1;
-    this.windowXPos = window.innerWidth * 0.1;
-    this.windowWidth = window.innerWidth * 0.8;
-    this.windowHeight = window.innerHeight * 0.8;
+    this.windowYPos = Math.round(window.innerHeight * 0.1);
+    this.windowXPos = Math.round(window.innerWidth * 0.1);
+    this.windowWidth = Math.round(window.innerWidth * 0.8);
+    this.windowHeight = Math.round(window.innerHeight * 0.8);
 
 
     let windowsPositions = [];
     let windows = document.body.querySelectorAll("#windows div div.app");
     
-    console.log(windowsPositions);
-
+    for (let i = 0; i < windows.length; i++){
+      windowsPositions.push({
+        x: parseInt(windows[i].style.left),
+        y: parseInt(windows[i].style.top)
+      })
+    }
     //window placement logic here;
+    while (windowsPositions.findIndex(wp => wp.x === _this.windowXPos && wp.y === _this.windowYPos) !== -1){
+      this.windowYPos += 20;
+      this.windowXPos += 20;
+      if (this.windowYPos > window.innerHeight - 20){
+        this.windowYPos = 0;
+      }
+      if (this.windowXPos > window.innerWidth - 20){
+        this.windowXPos = 0;
+      }
+    }
+    
   },
   methods: {
     dragEvent(e){
@@ -60,16 +81,36 @@ export default {
       if (this.$parent.$parent.inactiveWindows > 0) {
         this.$parent.$parent.inactiveWindows = 0
       }
+    },
+    closeWindow(){
+      console.log(this);
+      let activeWindows = this.$parent.$parent.activeApps;  
+  	  let currentApplication = this.id;
+      let appId = currentApplication - 1;
+
+      for(let i = 0; i < this.$parent.$parent.activeApps.length; i++) {
+        if (activeWindows[i].id == 1) 
+          this.$parent.$parent.activeApps.splice(appId, 1);
+      }
+    },
+    fullScreenWindow () {
+      this.fullscreen = !this.fullscreen;
     }
   },
 }
 </script>
 
-<style>
+<style lang="scss">
 .app {
   position:absolute;
   background:red;
   border:1px solid black;
+  &.fullscreen{
+    height: calc(100vh - 4vh) !important;
+    width: 100vw !important;
+    top:0 !important;
+    left:0 !important;
+  }
 }
 .dragging{
   opacity: .75;

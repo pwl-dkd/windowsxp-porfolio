@@ -28,5 +28,10 @@ export default {
 </script>
 
 <style>
-
+/* body {
+  overflow:hidden;
+} */
+.container {
+  overflow: hidden;
+}
 </style>

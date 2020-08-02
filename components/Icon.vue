@@ -1,9 +1,16 @@
 <template>
-  <div id="icon" v-on:click="openApplication" >
-    <p>dit is {{appName}}</p>
-    <p>( {{Xpos}} , {{Ypos}} )</p>
+  <div class="icon-outer">
+    <div class="icon" v-on:click="openApplication" @mousedown="startDragEvent">
+      <div class="icon-holder" :style="{'background-image' : 'url(' + require(`@/assets/images/icons/${iconName}.png`) + ')'}">
+      </div>
+      <p class="icon-name">{{appName}}</p>
+    </div>
+    <div class="icon ghost" v-if="dragging" :style="{top: current.y - start.y + 'px', left: current.x - start.x + 'px'}">
+      <div class="icon-holder" :style="{'background-image' : 'url(' + require(`@/assets/images/icons/${iconName}.png`) + ')'}">
+      </div>
+      <p class="icon-name">{{appName}}</p>
+    </div>
   </div>
-
 </template>
 
 <script>
@@ -11,29 +18,38 @@ export default {
   name: 'Icon',
   props: [
     'appName', 
-    'Ypos',
-    'Xpos'
+    'iconName',
   ],
+  data(){
+    return{
+      dragging: false,
+      start: {x: 0, y: 0},
+      current: {x: 0,y: 0}
+    }
+  },
   methods: {
-    bootIcon() {
-      var iconData = this.$props
-      var icon = this.$el;
-      var iconStyle = icon.style;
-
-      var iconHeight = (window.innerHeight * 0.096 );
-      var iconWidth = (window.innerWidth / 15 );
-
-      iconStyle.top = (iconHeight * iconData.Ypos) / window.innerHeight * 100 + '%' ;
-      iconStyle.left = (iconWidth * iconData.Xpos) / window.innerWidth * 100 + '%' ;
-
+    startDragEvent(e){
+      this.start.x = e.pageX;
+      this.start.y = e.pageY;
+      this.dragging = true;
+      this.current.x = e.pageX;
+      this.current.y = e.pageY;
+      document.addEventListener('mousemove', this.mouseMoveDrag);
+    },
+    mouseMoveDrag(e){
+      this.current.y = e.pageY;
+      this.current.x = e.pageX;
+    },
+    dropEvent(x,y){this.$parent.moveApp(this.appName,x,y);
     },
     openApplication() {
 
       var activeApps = this.$parent.$parent.activeApps;
 
       var newWindows =  {
-        id: (activeApps.length + 1),
-          name:this.appName
+        id: (activeApps.length + 1),  
+        name: this.appName,
+        iconName: this.iconName
       };
 
       this.$parent.$parent.inactiveWindows++;
@@ -42,18 +58,49 @@ export default {
 
     }
   },
-  mounted: function () {
-    this.bootIcon();
+  created: function () {
+    let _this = this;
+    window.addEventListener('mouseup', (e)=>{
+      if(this.dragging){
+      this.dropEvent(e.pageX,e.pageY);
+      _this.dragging = false;
+      document.removeEventListener('mousemove', this.mouseMoveDrag);
+      }
+    });
   }
-  
 }
 </script>
 
-<style>
-#icon {
-  width: calc(100vw / 15);
-  height: calc(96vh / 10);
-  position: absolute;
-  background-color:red;
+<style lang="scss">
+.icon-outer{
+  height: 100%;
+  width: 100%;
+
+}
+.icon {
+  &.ghost{
+    pointer-events: none;
+    opacity: .5;
+    transform: translateY(-100%);
+  }
+  height: 100%;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  .icon-holder{
+    flex: 1;
+    margin: 5px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .icon-name{
+    color: white;
+    width: 100%;
+    text-align: center;
+    filter: contrast(1);
+    text-shadow: 1px 0px 0px black,0px 1px 0px black,-1px 0px 0px black,0px -1px 0px black;
+  }
 }
 </style>
